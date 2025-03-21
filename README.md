@@ -1,26 +1,55 @@
-
 # Yetify
-App para niños
 
-# Características
-Pantalla de bienvenida con opciones de inicio de sesión y registro.
-Módulo de Mascota Virtual con interacciones y recordatorios.
-Gestión de tareas con formulario y lista de tareas.
-Módulo de cuestionarios de aprendizaje.
-Pantalla de configuración para personalizar la experiencia.
+Yetify es una aplicación educativa con gamificación para niños. Incluye una mascota virtual y módulos de aprendizaje interactivos.
 
 # Instalación y Configuración
 
-Requisitos
-Node.js (versión más reciente)
-npm o yarn instalado
+# Requisitos
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download) o superior
+- [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
+- Visual Studio Code o Visual Studio
 
-git clone [<Yetify>](https://github.com/Kevin7819/Yetify.git)
-cd api
-npm install
+# Clonar el repositorio
+```sh
+git clone https://github.com/Kevin7819/Yetify.git
+cd Yetify/api
+Configurar la base de datos
 
-# Cómo ejecutar la API
+crear appsettings.Development .json
 
-Para iniciar el servidor en modo desarrollo con recarga automática:
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
 
-npm run dev
+
+crear appsettings.json y coloca tus credenciales de SQL Server:
+
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=TU_SERVIDOR;Database=dbyetify;User Id=USUARIO;Password=CONTRASEÑA;TrustServerCertificate=True;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+
+Cómo ejecutar la API
+
+Instalar dependencias
+
+dotnet restore
+
+Crear la base de datos
+
+dotnet ef database update
+
+dotnet run

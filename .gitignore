@@ -1,16 +1,17 @@
-# Ignorar archivos binarios y de compilación
+# Archivos binarios y de compilación
 bin/
 obj/
 target/
 build/
 dist/
 
-# Ignorar dependencias
+# Dependencias
+node_modules/
 api/node_modules/
 .pnp.*
 .pnpm/
 
-# Ignorar archivos de configuración del sistema e IDEs
+# Archivos de configuración del sistema e IDEs
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -24,7 +25,17 @@ desktop.ini
 *.vs
 *.sln.dotSettings
 
-# Ignorar logs y archivos temporales
+# Logs y archivos temporales
 logs/
 *.log
 npm-debug.log*
+
+# Configuración de la base de datos (NO versionar credenciales)
+appsettings.json
+appsettings.Development.json
+
+# Archivos de migración generados automáticamente por Entity Framework
+Migrations/
+
+# Publicaciones
+wwwroot/
