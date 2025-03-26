@@ -10,5 +10,7 @@ namespace api.Data
         }
 
         public DbSet<UserTask> UserTasks { get; set; } 
+
+        public DbSet<Course> Courses {get; set;}
     }
 }

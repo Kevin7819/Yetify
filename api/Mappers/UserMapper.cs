@@ -1,9 +1,9 @@
-using api.Dtos.User;
+//using api.Dtos.User;
 using api.Models;
 
 namespace api.Mappers
 {
-    public static class UserMapper
+  /*  public static class UserMapper
     {
         public static UserDto ToDto(this User )
         {
@@ -21,4 +21,5 @@ namespace api.Mappers
             };
         }
     }
+    */
 }
