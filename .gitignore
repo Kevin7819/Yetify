@@ -31,8 +31,7 @@ logs/
 npm-debug.log*
 
 # Configuración de la base de datos (NO versionar credenciales)
-appsettings.json
-appsettings.Development.json
+/api/appsettings.json*
 
 # Archivos de migración generados automáticamente por Entity Framework
 Migrations/

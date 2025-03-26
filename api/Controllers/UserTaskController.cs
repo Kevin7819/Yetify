@@ -21,7 +21,6 @@ namespace api.Controllers
             _context = context;
         }
 
-        // Obtener todas las tareas
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,7 +29,6 @@ namespace api.Controllers
             return Ok(tasksDto);
         }
 
-        // Obtener una tarea por ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
@@ -39,7 +37,6 @@ namespace api.Controllers
             return Ok(task.ToDto());
         }
 
-        // Crear una nueva tarea
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserTaskRequestDto taskDto)
         {
@@ -49,7 +46,6 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = taskModel.Id }, taskModel.ToDto());
         }
 
-        // Actualizar una tarea
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserTaskRequestDto taskDto)
         {
@@ -65,7 +61,6 @@ namespace api.Controllers
             return Ok(taskModel.ToDto());
         }
 
-        // Eliminar una tarea
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

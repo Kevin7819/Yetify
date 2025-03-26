@@ -5,12 +5,12 @@ namespace api.Data
 {
     public class ApplicationDBContext : DbContext
     {
-        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
-        {
-        }
+        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options){}
 
         public DbSet<UserTask> UserTasks { get; set; } 
 
         public DbSet<Course> Courses {get; set;}
+
+        public DbSet<User> Users { get; set; } 
     }
 }
