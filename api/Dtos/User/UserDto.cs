@@ -1,6 +1,6 @@
-namespace api.Models
+namespace api.Dtos.User
 {
-    public class User
+    public class UserDto
     {
         public int id { get; set; }
         public string userName { get; set; }
