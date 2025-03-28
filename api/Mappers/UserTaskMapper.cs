@@ -9,11 +9,11 @@ namespace api.Mappers
         {
             return new UserTaskDto
             {
-                Id = task.Id,
-                Title = task.Title,
-                Description = task.Description,
-                IsCompleted = task.IsCompleted,
-                DueDate = task.DueDate
+                id = task.id,
+                title = task.title,
+                description = task.description,
+                isCompleted = task.isCompleted,
+                dueDate = task.dueDate
             };
         }
 
@@ -21,10 +21,10 @@ namespace api.Mappers
         {
             return new UserTask
             {
-                Title = taskDto.Title,
-                Description = taskDto.Description,
-                DueDate = taskDto.DueDate,
-                IsCompleted = false
+                title = taskDto.title,
+                description = taskDto.description,
+                dueDate = taskDto.dueDate,
+                isCompleted = false
             };
         }
     }

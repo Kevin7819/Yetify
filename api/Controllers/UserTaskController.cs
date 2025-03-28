@@ -32,7 +32,7 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var task = await _context.UserTasks.FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _context.UserTasks.FirstOrDefaultAsync(t => t.id == id);
             if (task == null) return NotFound();
             return Ok(task.ToDto());
         }
@@ -43,19 +43,19 @@ namespace api.Controllers
             var taskModel = taskDto.ToTaskFromCreateDto();
             await _context.UserTasks.AddAsync(taskModel);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = taskModel.Id }, taskModel.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id = taskModel.id }, taskModel.ToDto());
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserTaskRequestDto taskDto)
         {
-            var taskModel = await _context.UserTasks.FirstOrDefaultAsync(t => t.Id == id);
+            var taskModel = await _context.UserTasks.FirstOrDefaultAsync(t => t.id == id);
             if (taskModel == null) return NotFound();
 
-            taskModel.Title = taskDto.Title;
-            taskModel.Description = taskDto.Description;
-            taskModel.IsCompleted = taskDto.IsCompleted;
-            taskModel.DueDate = taskDto.DueDate;
+            taskModel.title = taskDto.title;
+            taskModel.description = taskDto.description;
+            taskModel.isCompleted = taskDto.isCompleted;
+            taskModel.dueDate = taskDto.dueDate;
 
             await _context.SaveChangesAsync();
             return Ok(taskModel.ToDto());
@@ -64,7 +64,7 @@ namespace api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var taskModel = await _context.UserTasks.FirstOrDefaultAsync(t => t.Id == id);
+            var taskModel = await _context.UserTasks.FirstOrDefaultAsync(t => t.id == id);
             if (taskModel == null) return NotFound();
 
             _context.UserTasks.Remove(taskModel);

@@ -11,9 +11,9 @@ namespace api.Mappers
         {
             return new CourseDto
             {
-                Id = course.Id,
-                NameCourse = course.NameCourse,
-                Description = course.Description
+                id = course.id,
+                nameCourse = course.nameCourse,
+                description = course.description
             };
         }
 
@@ -21,18 +21,11 @@ namespace api.Mappers
         {
             return new Course
             {
-                NameCourse = courseDto.NameCourse,
-                Description = courseDto.Description
+                nameCourse = courseDto.nameCourse,
+                description = courseDto.description
             };
         }  
 
-         public static void UpdateFromDto(this Course course, UpdateCourseRequestDto courseDto)
-        {
-            if (!string.IsNullOrWhiteSpace(courseDto.NameCourse))
-                course.NameCourse = courseDto.NameCourse;
-
-            if (!string.IsNullOrWhiteSpace(courseDto.Description))
-                course.Description = courseDto.Description;
-        } 
+        
     }
 }

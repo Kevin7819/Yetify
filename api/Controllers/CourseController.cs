@@ -35,44 +35,86 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id);
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.id == id);
             if (course == null) return NotFound();
             return Ok(course.ToDto());
         }
-        //crear una nueva materia
+
+
+        // Create a new course
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCourseRequestDto courseDto)
         {
+            // Check if a course with the same name already exists
+            bool exists = await _context.Courses.AnyAsync(c => c.nameCourse.ToLower() == courseDto.nameCourse.ToLower());
+    
+            if (exists)
+            {
+                return BadRequest(new {
+                     error = $"The course '{courseDto.nameCourse}' already exists.",
+                     suggestion = "Try saving the course with a different name."  
+                });
+            }
+
             var courseModel = courseDto.ToCourseFromCreateDto();
             await _context.Courses.AddAsync(courseModel);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id= courseModel.Id }, courseModel.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id= courseModel.id }, 
+                new { message = $"The course '{courseModel.nameCourse}' was successfully inserted.", course = courseModel.ToDto() });
         }
 
-        //actualizar materia
+        // Update an existing course
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCourseRequestDto courseDto)
         {
-            var courseModel = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id);
-            if (courseModel == null) return NotFound();
+            var courseModel = await _context.Courses.FirstOrDefaultAsync(c => c.id == id);
+            if (courseModel == null) 
+            {
+                return NotFound(new { error = $"The course was not found." });
+            }
 
-            courseModel.NameCourse = courseDto.NameCourse;
-            courseModel.Description = courseDto.Description;
+           // If the course name remains the same, only update the description
+           if (courseModel.nameCourse.ToLower() == courseDto.nameCourse.ToLower())
+           {
+           courseModel.description = courseDto.description;
+           await _context.SaveChangesAsync();
+           return Ok(new { message = $"The course '{courseModel.nameCourse}' was successfully updated.", course = courseModel.ToDto() });
+           }
+
+            // If the name is changed, check that no other course has the same name
+            bool exists = await _context.Courses.AnyAsync(c => c.nameCourse.ToLower() == courseDto.nameCourse.ToLower() && c.id != id);
+            if (exists)
+            {
+                return BadRequest(new {
+                     error = $"The course '{courseDto.nameCourse}' already exists.",
+                     suggestion = "Try updating with a different name."});
+            }
+
+            // Update name and description if no conflict exists
+            courseModel.nameCourse = courseDto.nameCourse;
+            courseModel.description = courseDto.description;
 
             await _context.SaveChangesAsync();
-            return Ok(courseModel.ToDto());
+            return Ok(new { message = $"The course '{courseModel.nameCourse}' was successfully updated.", course = courseModel.ToDto() });
         }
 
-        // Eliminar una materia
+        // Delete a course
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var courseModel = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id);
-            if (courseModel == null) return NotFound();
+            var courseModel = await _context.Courses.FirstOrDefaultAsync(c => c.id == id);
+            if (courseModel == null) 
+            {
+                return NotFound(new { 
+                    error = "The course was not found.",
+                    suggestion = "Try deleting a different course."
+                });
+            }
+
 
             _context.Courses.Remove(courseModel);
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok(new { message = $"The course '{courseModel.nameCourse}' was successfully deleted." });
         }
 }
 }
