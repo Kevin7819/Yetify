@@ -7,13 +7,15 @@ using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
-namespace api.Controllers
-{
+namespace api.Controllers{
+
+    [Authorize]
     [Route("api/usertask")]
     [ApiController]
-    public class UserTaskController : ControllerBase
-    {
+
+    public class UserTaskController : ControllerBase{
         private readonly ApplicationDBContext _context;
 
         public UserTaskController(ApplicationDBContext context)

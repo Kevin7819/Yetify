@@ -22,7 +22,7 @@ desktop.ini
 *.iws
 *.suo
 *.user
-*.vs
+*.vs/
 *.sln.dotSettings
 
 # Logs y archivos temporales
@@ -31,10 +31,10 @@ logs/
 npm-debug.log*
 
 # Configuración de la base de datos (NO versionar credenciales)
-/api/appsettings.json*
+api/appsettings.json
 
 # Archivos de migración generados automáticamente por Entity Framework
-Migrations/
+api/Migrations/
 
 # Publicaciones
 wwwroot/
