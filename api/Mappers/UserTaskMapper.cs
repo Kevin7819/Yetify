@@ -10,10 +10,11 @@ namespace api.Mappers
             return new UserTaskDto
             {
                 id = task.id,
-                title = task.title,
+                idUser = task.idUser,
+                idCourse = task.idCourse,
                 description = task.description,
-                isCompleted = task.isCompleted,
-                dueDate = task.dueDate
+                dueDate = task.dueDate,
+                status = task.status
             };
         }
 
@@ -21,10 +22,11 @@ namespace api.Mappers
         {
             return new UserTask
             {
-                title = taskDto.title,
+                idUser = taskDto.idUser,
+                idCourse = taskDto.idCourse,
                 description = taskDto.description,
                 dueDate = taskDto.dueDate,
-                isCompleted = false
+                status = taskDto.status
             };
         }
     }

@@ -93,16 +93,52 @@ namespace api.Migrations
                     b.Property<DateTime>("dueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isCompleted")
-                        .HasColumnType("bit");
+                    b.Property<int>("idCourse")
+                        .HasColumnType("int");
 
-                    b.Property<string>("title")
+                    b.Property<int>("idUser")
+                        .HasColumnType("int");
+
+                    b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
 
+                    b.HasIndex("idCourse");
+
+                    b.HasIndex("idUser");
+
                     b.ToTable("UserTasks");
+                });
+
+            modelBuilder.Entity("api.Models.UserTask", b =>
+                {
+                    b.HasOne("api.Models.Course", "Course")
+                        .WithMany("UserTasks")
+                        .HasForeignKey("idCourse")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.User", "User")
+                        .WithMany("UserTasks")
+                        .HasForeignKey("idUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("api.Models.Course", b =>
+                {
+                    b.Navigation("UserTasks");
+                });
+
+            modelBuilder.Entity("api.Models.User", b =>
+                {
+                    b.Navigation("UserTasks");
                 });
 #pragma warning restore 612, 618
         }
