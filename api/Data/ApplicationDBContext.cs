@@ -12,6 +12,7 @@ namespace api.Data
         /// Gets or sets the UserTasks table in the database
         public DbSet<UserTask> UserTasks { get; set; }
 
+        public DbSet<Activity> Activities {get; set; }
         /// Gets or sets the Courses table in the database
         public DbSet<Course> Courses { get; set; }
 
