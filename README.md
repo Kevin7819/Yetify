@@ -68,6 +68,14 @@ dotnet restore
 
 ### 2️⃣ Crear la base de datos
 
+### Para iniciar migraciones
+
+```sh
+dotnet ef migrations add Init
+```
+
+### Para actualizar la base de datos
+
 ```sh
 dotnet ef database update
 ```
