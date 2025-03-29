@@ -8,13 +8,13 @@ using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace api.Controllers{
 
     [Authorize]
     [Route("api/usertask")]
     [ApiController]
-
     public class UserTaskController : ControllerBase{
         private readonly ApplicationDBContext _context;
 
@@ -53,7 +53,18 @@ namespace api.Controllers{
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserTaskRequestDto taskDto)
-        {
+        {   
+            
+            // Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { message = "Usuario no autenticado." });
+            }
+
+            int userId = int.Parse(userIdClaim);
+
+
              // Validate the input data
              if (taskDto == null)
             {
@@ -67,10 +78,6 @@ namespace api.Controllers{
             {
                 return BadRequest(new { message = "El estado de la tarea es requerido." });
             }
-            if (taskDto.idUser == 0)
-            {
-                return BadRequest(new { message = "El usuario es requerido." });
-            }
             if (taskDto.idCourse == 0)
             {
                 return BadRequest(new { message = "El curso es requerido." });
@@ -83,6 +90,9 @@ namespace api.Controllers{
 
            // Convert DTO to model and save to database
             var taskModel = taskDto.ToTaskFromCreateDto();
+            
+            taskModel.idUser = userId;  // assign user
+
             await _context.UserTasks.AddAsync(taskModel);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetById), new { id= taskModel.id }, 
