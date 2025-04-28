@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using api.Services;
 using api.Custome;
+using Microsoft.OpenApi.Models;
+using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +46,39 @@ builder.Services.AddScoped<Utils>();       // Utility service
 
 builder.Services.AddControllers();          // Enables controllers
 builder.Services.AddEndpointsApiExplorer(); // Enables endpoints
-builder.Services.AddSwaggerGen();           // Enables Swagger for API documentation
+
+// Configuración detallada de Swagger con JWT
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Yetify", Version = "v1" });
+
+    // **Configuración para Bearer Token (JWT)**
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Ingresa tu token JWT en el formato: **Bearer {token}**",
+        Name = "Authorization",  // Nombre del header (debe ser "Authorization")
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",  // Esquema de autenticación (Bearer Token)
+        BearerFormat = "JWT"
+    });
+
+    // **Hace que Swagger UI pida el token en cada request**
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new List<string>()  // Lista vacía indica que no se requieren scopes
+        }
+    });
+});
 
 // Builds the application with all configurations
 var app = builder.Build();

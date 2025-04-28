@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.User;
 using api.Mappers;
@@ -8,28 +5,22 @@ using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using api.Constants;
 
 namespace api.Controllers
 {
-    // Controller requires authentication
     [Authorize]
-    // Base route for all endpoints
-    [Route("api/user")]
-    // API controller with built-in features
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        // Database context instance
         private readonly ApplicationDBContext _context;
 
-        // Constructor with dependency injection
         public UserController(ApplicationDBContext context)
         {
             _context = context;
         }
 
-        // GET: api/user - Get all users
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -37,14 +28,13 @@ namespace api.Controllers
             
             if (!users.Any())
             {
-                return NotFound(new { message = "No hay usuarios registrados." });
+                return NotFound(new { message = MessageConstants.EntityNotFound("usuarios") });
             }
 
             var usersDto = users.Select(user => user.ToDto());
             return Ok(usersDto);
         }
 
-        // GET: api/user/{id} - Get user by ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
@@ -52,8 +42,8 @@ namespace api.Controllers
             {
                 return BadRequest(new 
                 {
-                    error = "ID de usuario inválido.",
-                    sugerencia = "El ID debe ser un número positivo."
+                    error = MessageConstants.FieldRequired("ID de usuario válido"),
+                    suggestion = "El ID debe ser un número positivo."
                 });
             }
 
@@ -63,15 +53,14 @@ namespace api.Controllers
             {
                 return NotFound(new
                 {
-                    error = "Usuario no encontrado.",
-                    sugerencia = "Verifique el ID e intente nuevamente."
+                    error = MessageConstants.EntityNotFound("Usuario"),
+                    suggestion = MessageConstants.Generic.TryAgain
                 });
             }
             
             return Ok(user.ToDto());
         }
 
-        // POST: api/user - Create new user
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserRequestDto userDto)
         {
@@ -80,8 +69,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "El nombre de usuario no puede estar vacío.",
-                    sugerencia = "Por favor, ingrese un nombre de usuario válido."
+                    error = MessageConstants.FieldRequired("Nombre de usuario"),
+                    suggestion = "Por favor, ingrese un nombre de usuario válido."
                 });
             }
 
@@ -89,8 +78,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "La contraseña no puede estar vacía.",
-                    sugerencia = "Por favor, ingrese una contraseña válida."
+                    error = MessageConstants.FieldRequired("Contraseña"),
+                    suggestion = "Por favor, ingrese una contraseña válida."
                 });
             }
 
@@ -98,8 +87,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "El email no puede estar vacío.",
-                    sugerencia = "Por favor, ingrese un email válido."
+                    error = MessageConstants.FieldRequired("Email"),
+                    suggestion = "Por favor, ingrese un email válido."
                 });
             }
 
@@ -112,7 +101,7 @@ namespace api.Controllers
                 return Conflict(new
                 {
                     error = $"El nombre de usuario '{userDto.userName}' ya está en uso.",
-                    sugerencia = "Intente con un nombre de usuario diferente."
+                    suggestion = "Intente con un nombre de usuario diferente."
                 });
             }
 
@@ -125,7 +114,7 @@ namespace api.Controllers
                 return Conflict(new
                 {
                     error = $"El email '{userDto.email}' ya está registrado.",
-                    sugerencia = "Intente con un email diferente o recupere su contraseña si ya tiene una cuenta."
+                    suggestion = "Intente con un email diferente o recupere su contraseña si ya tiene una cuenta."
                 });
             }
 
@@ -136,12 +125,11 @@ namespace api.Controllers
             
             return CreatedAtAction(nameof(GetById), new { id = userModel.id }, 
                 new { 
-                    message = $"El usuario '{userModel.userName}' se ha registrado correctamente.", 
+                    message = MessageConstants.EntityCreated($"El usuario '{userModel.userName}'"), 
                     user = userModel.ToDto() 
                 });
         }
 
-        // PUT: api/user/{id} - Update existing user
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserRequestDto userDto)
         {
@@ -150,8 +138,8 @@ namespace api.Controllers
             {
                 return BadRequest(new 
                 {
-                    error = "ID de usuario inválido.",
-                    sugerencia = "El ID debe ser un número positivo."
+                    error = MessageConstants.FieldRequired("ID de usuario válido"),
+                    suggestion = "El ID debe ser un número positivo."
                 });
             }
 
@@ -160,8 +148,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "El nombre de usuario no puede estar vacío.",
-                    sugerencia = "Por favor, ingrese un nombre de usuario válido."
+                    error = MessageConstants.FieldRequired("Nombre de usuario"),
+                    suggestion = "Por favor, ingrese un nombre de usuario válido."
                 });
             }
 
@@ -169,8 +157,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "La contraseña no puede estar vacía.",
-                    sugerencia = "Por favor, ingrese una contraseña válida."
+                    error = MessageConstants.FieldRequired("Contraseña"),
+                    suggestion = "Por favor, ingrese una contraseña válida."
                 });
             }
 
@@ -178,8 +166,8 @@ namespace api.Controllers
             {
                 return BadRequest(new
                 {
-                    error = "El email no puede estar vacío.",
-                    sugerencia = "Por favor, ingrese un email válido."
+                    error = MessageConstants.FieldRequired("Email"),
+                    suggestion = "Por favor, ingrese un email válido."
                 });
             }
 
@@ -190,8 +178,8 @@ namespace api.Controllers
             {
                 return NotFound(new
                 {
-                    error = "Usuario no encontrado.",
-                    sugerencia = "Verifique el ID e intente nuevamente."
+                    error = MessageConstants.EntityNotFound("Usuario"),
+                    suggestion = MessageConstants.Generic.TryAgain
                 });
             }
 
@@ -206,7 +194,7 @@ namespace api.Controllers
                     return Conflict(new
                     {
                         error = $"El nombre de usuario '{userDto.userName}' ya está en uso.",
-                        sugerencia = "Intente con un nombre de usuario diferente."
+                        suggestion = "Intente con un nombre de usuario diferente."
                     });
                 }
             }
@@ -222,7 +210,7 @@ namespace api.Controllers
                     return Conflict(new
                     {
                         error = $"El email '{userDto.email}' ya está registrado.",
-                        sugerencia = "Intente con un email diferente."
+                        suggestion = "Intente con un email diferente."
                     });
                 }
             }
@@ -237,12 +225,11 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             
             return Ok(new { 
-                message = $"El usuario '{userModel.userName}' se ha actualizado correctamente.", 
+                message = MessageConstants.EntityUpdated($"El usuario '{userModel.userName}'"), 
                 user = userModel.ToDto() 
             });
         }
 
-        // DELETE: api/user/{id} - Delete user
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -251,8 +238,8 @@ namespace api.Controllers
             {
                 return BadRequest(new 
                 {
-                    error = "ID de usuario inválido.",
-                    sugerencia = "El ID debe ser un número positivo."
+                    error = MessageConstants.FieldRequired("ID de usuario válido"),
+                    suggestion = "El ID debe ser un número positivo."
                 });
             }
 
@@ -263,8 +250,8 @@ namespace api.Controllers
             {
                 return NotFound(new
                 {
-                    error = "Usuario no encontrado.",
-                    sugerencia = "Verifique el ID e intente nuevamente."
+                    error = MessageConstants.EntityNotFound("Usuario"),
+                    suggestion = MessageConstants.Generic.TryAgain
                 });
             }
 
@@ -273,7 +260,7 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             
             return Ok(new { 
-                message = $"El usuario '{userModel.userName}' se ha eliminado correctamente." 
+                message = MessageConstants.EntityDeleted($"El usuario '{userModel.userName}'") 
             });
         }
     }

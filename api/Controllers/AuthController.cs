@@ -7,12 +7,12 @@ using api.Models;
 using api.Dtos.Login;
 using api.Dtos.User;
 using api.Custome;
+using api.Constants;
 
 namespace api.Controllers
 {
-    // Controller for user authentication
-    [Route("api/[controller]")] // Defines the base route for the controller
-    [AllowAnonymous] // Allows access without authentication
+    [Route("api/[controller]")]
+    [AllowAnonymous]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -25,54 +25,85 @@ namespace api.Controllers
             _utils = utils;
         }
 
-        // Endpoint to register a new user
         [HttpPost("Register")]
         public async Task<ActionResult> Register(UserDto userDto)
         {
-            // Validates that the username and password are not empty
+            // Validate required fields
             if (string.IsNullOrEmpty(userDto.userName) || string.IsNullOrEmpty(userDto.password))
             {
-                return BadRequest(new { isSuccess = false, message = "Username and password are required." });
+                return BadRequest(new { 
+                    isSuccess = false, 
+                    message = MessageConstants.Generic.RequiredFields 
+                });
             }
 
-            // Creates a new user with an encrypted password
+            // Check if username already exists
+            var existingUser = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.userName == userDto.userName);
+                
+            if (existingUser != null)
+            {
+                return Conflict(new {
+                    isSuccess = false,
+                    message = UserConstants.UsernameExists
+                });
+            }
+
+            // Create new user
             var user = new User
             {
                 userName = userDto.userName,
                 email = userDto.email,
-                password = _utils.EncryptSHA256(userDto.password), // Encrypts the password
+                password = _utils.EncryptSHA256(userDto.password),
                 role = userDto.role,
                 birthday = userDto.birthday,
                 registrationDate = DateTime.Now
             };
 
-            // Saves the user in the database
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
-            // Checks if the user was successfully created
-            if (user.id != 0)
-                return Ok(new { isSuccess = true, message = "User successfully registered." });
-            else
-                return Ok(new { isSuccess = false, message = "Error registering the user." });
+            return user.id != 0 
+                ? Ok(new { 
+                    isSuccess = true, 
+                    message = MessageConstants.EntityCreated("Usuario") 
+                })
+                : StatusCode(StatusCodes.Status500InternalServerError, new { 
+                    isSuccess = false, 
+                    message = MessageConstants.Generic.ServerError 
+                });
         }
 
-        // Endpoint for user login and JWT token generation
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            // Searches for the user with the provided credentials
+            // Validate required fields
+            if (string.IsNullOrEmpty(loginDto.userName) || string.IsNullOrEmpty(loginDto.password))
+            {
+                return BadRequest(new { 
+                    isSuccess = false, 
+                    message = MessageConstants.Generic.RequiredFields 
+                });
+            }
+
             var user = await _dbContext.Users
                 .Where(u => u.userName == loginDto.userName &&
-                            u.password == _utils.EncryptSHA256(loginDto.password)) // Encrypts the password for comparison
+                            u.password == _utils.EncryptSHA256(loginDto.password))
                 .FirstOrDefaultAsync();
 
-            // If the user does not exist, return an empty token
             if (user == null)
-                return Ok(new { isSuccess = false, token = "" });
+            {
+                return Unauthorized(new { 
+                    isSuccess = false, 
+                    message =  AuthConstants.InvalidCredentials 
+                });
+            }
 
-            // If credentials are correct, generate and return a JWT token
-            return Ok(new { isSuccess = true, token = _utils.GenerateJWT(user) });
+            return Ok(new { 
+                isSuccess = true, 
+                token = _utils.GenerateJWT(user),
+                message = AuthConstants.LoginSuccess
+            });
         }
     }
 }
