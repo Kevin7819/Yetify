@@ -97,6 +97,26 @@ namespace api.Controllers
                     task = taskModel.ToDto() 
                 });
         }
+        [HttpGet("user/{idUser}")]
+        public async Task<IActionResult> GetTasksByUserId([FromRoute] int idUser)
+        {
+            // Retrieve all tasks that belong to a specific user by their ID
+            var tasks = await _context.UserTasks
+                .Where(t => t.idUser == idUser)
+                .ToListAsync();
+
+            // If no tasks are found, return a 404 with a message
+            if (!tasks.Any())
+            {
+                return NotFound(new { message = $"No tasks found for the user with id {idUser}" });
+            }
+
+            // Convert the list of task entities to DTOs
+            var taskDtos = tasks.Select(t => t.ToDto());
+
+            // Return the tasks as a successful response
+            return Ok(taskDtos);
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserTaskRequestDto taskDto)
