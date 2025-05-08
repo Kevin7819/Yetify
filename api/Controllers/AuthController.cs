@@ -73,37 +73,47 @@ namespace api.Controllers
                     message = MessageConstants.Generic.ServerError 
                 });
         }
-
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            // Validate required fields
             if (string.IsNullOrEmpty(loginDto.userName) || string.IsNullOrEmpty(loginDto.password))
             {
-                return BadRequest(new { 
-                    isSuccess = false, 
-                    message = MessageConstants.Generic.RequiredFields 
+                return BadRequest(new
+                {
+                    isSuccess = false,
+                    message = MessageConstants.Generic.RequiredFields
                 });
             }
 
             var user = await _dbContext.Users
-                .Where(u => u.userName == loginDto.userName &&
-                            u.password == _utils.EncryptSHA256(loginDto.password))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(u => u.userName == loginDto.userName &&
+                                        u.password == _utils.EncryptSHA256(loginDto.password));
 
             if (user == null)
             {
-                return Unauthorized(new { 
-                    isSuccess = false, 
-                    message =  AuthConstants.InvalidCredentials 
+                return Unauthorized(new
+                {
+                    isSuccess = false,
+                    message = AuthConstants.InvalidCredentials
                 });
             }
 
-            return Ok(new { 
-                isSuccess = true, 
-                token = _utils.GenerateJWT(user),
-                message = AuthConstants.LoginSuccess
+            var loginResponse = new LoginResponseDto
+            {
+                id = user.id,
+                userName = user.userName,
+                email = user.email,
+                role = user.role,
+                token = _utils.GenerateJWT(user)
+            };
+
+            return Ok(new
+            {
+                isSuccess = true,
+                message = AuthConstants.LoginSuccess,
+                user = loginResponse
             });
         }
+
     }
 }
