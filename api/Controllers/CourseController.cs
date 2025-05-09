@@ -8,7 +8,8 @@ using api.Constants;
 
 namespace api.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class CourseController : ControllerBase

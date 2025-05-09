@@ -9,7 +9,8 @@ using api.Constants;
 
 namespace api.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class UserTaskController : ControllerBase
@@ -33,6 +34,8 @@ namespace api.Controllers
             return Ok(tasksDto);
         }
 
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
@@ -46,6 +49,56 @@ namespace api.Controllers
                 });
             } 
             return Ok(task.ToDto());
+        }
+
+        [HttpPost("user/{idUser}")]
+        public async Task<IActionResult> CreateTaskByUser([FromRoute] int idUser, [FromBody] CreateUserTaskRequestDto taskDto)
+        {
+            // Validate that the user exists (optional)
+            var userExists = await _context.Users.AnyAsync(u => u.id == idUser);
+            if (!userExists)
+            {
+            return NotFound(new 
+            { 
+                message = $"User with id {idUser} not found",
+                suggestion = "Please provide a valid user ID"
+            });
+            }
+
+            // Validate input data
+            if (taskDto == null)
+            {
+            return BadRequest(new { message = MessageConstants.Generic.RequiredFields });
+            }
+            if (string.IsNullOrWhiteSpace(taskDto.description))
+            {
+            return BadRequest(new { message = MessageConstants.FieldRequired("La descripción de la tarea") });
+            }
+            if (taskDto.idCourse <= 0)
+            {
+            return BadRequest(new { message = MessageConstants.FieldRequired("El curso") });
+            }
+
+            // Set default status if not provided
+            if (string.IsNullOrWhiteSpace(taskDto.status))
+            {
+            taskDto.status = UserTaskConstants.DefaultStatus;
+            }
+
+            // Create the task assigned to the specified user
+            var taskModel = taskDto.ToTaskFromCreateDto();
+            taskModel.idUser = idUser;  // Assign to the user from the route parameter
+
+            await _context.UserTasks.AddAsync(taskModel);
+            await _context.SaveChangesAsync();
+            
+            return CreatedAtAction(
+            nameof(GetById), 
+            new { id = taskModel.id }, 
+            new { 
+                message = $"Task created successfully for user {idUser}",
+                task = taskModel.ToDto() 
+            });
         }
 
         [HttpPost]
@@ -118,6 +171,7 @@ namespace api.Controllers
             return Ok(taskDtos);
         }
 
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserTaskRequestDto taskDto)
         {
