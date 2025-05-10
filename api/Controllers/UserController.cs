@@ -47,7 +47,7 @@ namespace api.Controllers
                 });
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             
             if (user == null) 
             {
@@ -94,7 +94,7 @@ namespace api.Controllers
 
             // Check username uniqueness
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.userName.ToLower() == userDto.userName.ToLower());
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == userDto.userName.ToLower());
             
             if (existingUser != null)
             {
@@ -107,7 +107,7 @@ namespace api.Controllers
 
             // Check email uniqueness
             var existingEmail = await _context.Users
-                .FirstOrDefaultAsync(u => u.email.ToLower() == userDto.email.ToLower());
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == userDto.email.ToLower());
             
             if (existingEmail != null)
             {
@@ -123,9 +123,9 @@ namespace api.Controllers
             await _context.Users.AddAsync(userModel);
             await _context.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetById), new { id = userModel.id }, 
+            return CreatedAtAction(nameof(GetById), new { id = userModel.Id }, 
                 new { 
-                    message = MessageConstants.EntityCreated($"El usuario '{userModel.userName}'"), 
+                    message = MessageConstants.EntityCreated($"El usuario '{userModel.UserName}'"), 
                     user = userModel.ToDto() 
                 });
         }
@@ -172,7 +172,7 @@ namespace api.Controllers
             }
 
             // Find user to update
-            var userModel = await _context.Users.FirstOrDefaultAsync(u => u.id == id);
+            var userModel = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             
             if (userModel == null) 
             {
@@ -184,10 +184,10 @@ namespace api.Controllers
             }
 
             // Check if new username is unique
-            if (userModel.userName.ToLower() != userDto.userName.ToLower())
+            if (userModel.UserName.ToLower() != userDto.userName.ToLower())
             {
                 var userWithSameName = await _context.Users
-                    .FirstOrDefaultAsync(u => u.userName.ToLower() == userDto.userName.ToLower() && u.id != id);
+                    .FirstOrDefaultAsync(u => u.UserName.ToLower() == userDto.userName.ToLower() && u.Id != id);
                 
                 if (userWithSameName != null)
                 {
@@ -200,10 +200,10 @@ namespace api.Controllers
             }
 
             // Check if new email is unique
-            if (userModel.email.ToLower() != userDto.email.ToLower())
+            if (userModel.Email.ToLower() != userDto.email.ToLower())
             {
                 var userWithSameEmail = await _context.Users
-                    .FirstOrDefaultAsync(u => u.email.ToLower() == userDto.email.ToLower() && u.id != id);
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == userDto.email.ToLower() && u.Id != id);
                 
                 if (userWithSameEmail != null)
                 {
@@ -216,16 +216,15 @@ namespace api.Controllers
             }
 
             // Update user properties
-            userModel.userName = userDto.userName;
-            userModel.password = userDto.password;
-            userModel.role = userDto.role;
-            userModel.email = userDto.email;
-            userModel.birthday = userDto.birthday;
+            userModel.UserName = userDto.userName;
+            userModel.Role = userDto.role;
+            userModel.Email = userDto.email;
+            userModel.Birthday = userDto.birthday;
 
             await _context.SaveChangesAsync();
             
             return Ok(new { 
-                message = MessageConstants.EntityUpdated($"El usuario '{userModel.userName}'"), 
+                message = MessageConstants.EntityUpdated($"El usuario '{userModel.UserName}'"), 
                 user = userModel.ToDto() 
             });
         }
@@ -244,7 +243,7 @@ namespace api.Controllers
             }
 
             // Find user to delete
-            var userModel = await _context.Users.FirstOrDefaultAsync(u => u.id == id);
+            var userModel = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             
             if (userModel == null) 
             {
@@ -260,7 +259,7 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             
             return Ok(new { 
-                message = MessageConstants.EntityDeleted($"El usuario '{userModel.userName}'") 
+                message = MessageConstants.EntityDeleted($"El usuario '{userModel.UserName}'") 
             });
         }
     }

@@ -1,22 +1,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
+// Main user entity model
 namespace api.Models
 {
-    // Main user entity model
-    public class User
+    // Custom ApplicationUser extending IdentityUser
+    public class User : IdentityUser<int>
     {
-        [Key]
-        public int id { get; set; }                  // Primary key
-        
-        public string userName { get; set; }         // Unique username
-        public string password { get; set; }         // Hashed password
-        public string role { get; set; }             // User role/privileges
-        public string email { get; set; }            // Unique email
-        public DateTime birthday { get; set; }       // Date of birth
-        public DateTime registrationDate { get; set; } // Account creation date
 
-        // Navigation property for user's tasks
-        public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
+        public string Role { get; set; }              // Optional: role info (can also use IdentityRole)
+        public DateTime Birthday { get; set; }        // Custom field
+        public DateTime RegistrationDate { get; set; } // Custom field
+
+        // Navigation property for tasks
+        public List<UserTask> UserTasks { get; set; } = new();
     }
 }

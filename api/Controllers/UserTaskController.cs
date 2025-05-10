@@ -9,8 +9,7 @@ using api.Constants;
 
 namespace api.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserTaskController : ControllerBase
@@ -55,7 +54,7 @@ namespace api.Controllers
         public async Task<IActionResult> CreateTaskByUser([FromRoute] int idUser, [FromBody] CreateUserTaskRequestDto taskDto)
         {
             // Validate that the user exists (optional)
-            var userExists = await _context.Users.AnyAsync(u => u.id == idUser);
+            var userExists = await _context.Users.AnyAsync(u => u.Id == idUser);
             if (!userExists)
             {
             return NotFound(new 

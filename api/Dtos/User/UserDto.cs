@@ -1,28 +1,31 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace api.Dtos.User
 {
     // User Data Transfer Object (DTO) for API responses
     // Contains user details without sensitive data
     public class UserDto
     {
-        // Unique user identifier
         public int id { get; set; }
         
-        // User's display name
+        [Required(ErrorMessage = "El nombre de usuario es requerido")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres")]
         public string userName { get; set; }
         
-        // Hashed password (should never be exposed in responses)
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
         public string password { get; set; }
         
-        // User role (e.g., "Admin", "User")
+        [Required(ErrorMessage = "El rol es requerido")]
         public string role { get; set; }
         
-        // User's email address
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "El formato del email no es válido")]
         public string email { get; set; }
         
-        // User's date of birth
+        [Required(ErrorMessage = "La fecha de nacimiento es requerida")]
         public DateTime birthday { get; set; }
         
-        // When the user registered (set automatically)
         public DateTime registrationDate { get; set; }
     }
 }
