@@ -12,6 +12,7 @@ namespace api.Dtos.Activity{
         public DateTime startDate { get; set; }     //start date of the activity
         public DateTime endDate { get; set; }       //End date of the activity
         public string activityStatus { get; set; }  //Status of activity
-        public string apiSource { get; set; }       //Activity resource API
+        public string urlSources { get; set; }      //Activity resource API
+        public int userId {get; set;}               //user id
     }
 }
