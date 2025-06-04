@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using api.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace api.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
-    [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
+    [Route("api/[controller]")]
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDBContext _context;

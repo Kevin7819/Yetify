@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using api.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace api.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class UserTaskController : ControllerBase
@@ -55,7 +55,7 @@ namespace api.Controllers
         public async Task<IActionResult> CreateTaskByUser([FromRoute] int idUser, [FromBody] CreateUserTaskRequestDto taskDto)
         {
             // Validate that the user exists (optional)
-            var userExists = await _context.Users.AnyAsync(u => u.id == idUser);
+            var userExists = await _context.Users.AnyAsync(u => u.Id == idUser);
             if (!userExists)
             {
             return NotFound(new 

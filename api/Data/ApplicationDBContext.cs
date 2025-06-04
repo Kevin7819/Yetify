@@ -1,22 +1,17 @@
-using Microsoft.EntityFrameworkCore;
+
 using api.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Data
 {
-    /// Represents the database context for the application, providing access to entities
-    public class ApplicationDBContext : DbContext
+    public class ApplicationDBContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
-        /// Initializes a new instance of the database context
-        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options){}
+        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options) {}
 
-        /// Gets or sets the UserTasks table in the database
         public DbSet<UserTask> UserTasks { get; set; }
-
-        public DbSet<Activity> Activities {get; set; }
-        /// Gets or sets the Courses table in the database
+        public DbSet<Activity> Activities { get; set; }
         public DbSet<Course> Courses { get; set; }
-
-        /// Gets or sets the Users table in the database
-        public DbSet<User> Users { get; set; }
     }
 }
