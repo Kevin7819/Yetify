@@ -14,13 +14,13 @@ using System.Collections.Generic;
 var builder = WebApplication.CreateBuilder(args);
 
 // -------------------------------------------
-// 🔌 Configuración de base de datos (SQL Server)
+// 🔌 Database configuration (SQL Server)
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions => sqlOptions.CommandTimeout(300)));
 
 // -------------------------------------------
-// 🔐 Configuración de Identity CON TU CLASE USER PERSONALIZADA
+// 🔐 Identity configuration with custom User class
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
     options.Password.RequireDigit = false;
@@ -29,8 +29,8 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
     options.User.RequireUniqueEmail = true;
-    
-    // Configuración adicional para evitar problemas comunes
+
+    // Additional settings to avoid common issues
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
@@ -38,12 +38,12 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<ApplicationDBContext>()
 .AddDefaultTokenProviders();
 
-// 🔄 Configura el tiempo de vida de los tokens (ej: 2 horas)
+// 🔄 Configure token lifespan (e.g., 2 hours)
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
     opt.TokenLifespan = TimeSpan.FromHours(2));
 
 // -------------------------------------------
-// ⚙️ Configuración JWT
+// ⚙️ JWT configuration
 var jwtSettings = new JwtSettings();
 builder.Configuration.GetSection("Jwt").Bind(jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
@@ -64,30 +64,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // -------------------------------------------
-// 📨 Configuración de envío de correo
+// 📨 Email sending configuration
 var emailConfig = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
-builder.Services.AddSingleton(emailConfig);
+//builder.Services.AddSingleton(emailConfig);
+builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddScoped<IEmailSender, EmailSender>();
-builder.Services.AddControllersWithViews(); // Para vistas MVC
+
 // -------------------------------------------
-// 💼 Servicios personalizados
+// 💼 Custom services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<Utils>();
 
 // -------------------------------------------
-// 🧭 Controladores y endpoints
+// 🧭 Controllers and endpoints
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // -------------------------------------------
-// 📘 Swagger + JWT
+// 📘 Swagger configuration with JWT support
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Yetify", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Ingresa tu token JWT en el formato: **Bearer {token}**",
+        Description = "Enter your JWT token like: **Bearer {token}**",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -112,25 +113,25 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // -------------------------------------------
-// 🚀 Construcción de la aplicación
+// 🚀 App build and configuration
 var app = builder.Build();
 
-// Verificación de conexión a BD
+// Database connection check
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
     try 
     {
         db.Database.CanConnect();
-        Console.WriteLine("✅ Conexión a BD exitosa");
+        Console.WriteLine("✅ Successfully connected to the database");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error de conexión: {ex.Message}");
+        Console.WriteLine($"❌ Database connection error: {ex.Message}");
     }
 }
 
-// Swagger solo en desarrollo
+// Enable Swagger only in development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -139,7 +140,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // 🔒 Importante para validar tokens
+app.UseAuthentication(); // 🔒 Required for token validation
 app.UseAuthorization();
 
 app.MapControllers();

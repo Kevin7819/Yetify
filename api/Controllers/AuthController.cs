@@ -14,6 +14,8 @@ using api.Dtos.User;
 using api.Custome;
 using api.Constants;
 using api.Services;
+using Microsoft.AspNetCore.Identity.Data;
+using System.Net;
 
 namespace api.Controllers
 {
@@ -26,17 +28,20 @@ namespace api.Controllers
         private readonly Utils _utils;
         private readonly UserManager<User> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             ApplicationDBContext dbContext,
             Utils utils,
             UserManager<User> userManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ILogger<AuthController> logger)
         {
             _dbContext = dbContext;
             _utils = utils;
             _userManager = userManager;
             _emailSender = emailSender;
+            _logger = logger;
         }
 
         [HttpPost("Register")]
@@ -157,72 +162,7 @@ namespace api.Controllers
         }
 
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new
-                {
-                    isSuccess = false,
-                    message = "Invalid data",
-                    errors = ModelState.Values.SelectMany(v => v.Errors)
-                });
-            }
-
-            if (string.IsNullOrWhiteSpace(model.Email))
-            {
-                return BadRequest(new
-                {
-                    isSuccess = false,
-                    message = "Email is required"
-                });
-            }
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user == null)
-            {
-                return Ok(new
-                {
-                    isSuccess = true,
-                    message = "If the email exists, a recovery link has been sent"
-                });
-            }
-
-            try
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-                var resetLink = $"http://localhost:5003/reset-password?token={encodedToken}&email={user.Email}";
-
-                // Enviar el correo SIEMPRE
-                var message = $"<p>Click <a href='{resetLink}'>here</a> to reset your password.</p>";
-                await _emailSender.SendEmailAsync(user.Email, "Reset your password", message);
-
-                // También incluir el token si quieres verlo en dev (opcional)
-                return Ok(new
-                {
-                    isSuccess = true,
-                    message = "Recovery email sent",
-                    resetLink = resetLink,
-                    token = encodedToken
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    isSuccess = false,
-                    message = "An error occurred while sending the email",
-                    error = ex.Message
-                });
-            }
-        }
-
-
-
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
         {
             if (!ModelState.IsValid)
             {
@@ -234,38 +174,142 @@ namespace api.Controllers
                 });
             }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
+            try
             {
+                var user = await _userManager.FindByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    // Por seguridad, no revelar si el email existe
+                    _logger.LogInformation($"Solicitud de recuperación para email no registrado: {request.Email}");
+                    return Ok(new
+                    {
+                        isSuccess = true,
+                        message = "Si el email existe, se ha enviado un código de recuperación"
+                    });
+                }
+
+                // Generar token de recuperación
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+                // Crear enlace de recuperación
+                var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={encodedToken}&email={WebUtility.UrlEncode(user.Email)}";
+
+                // Plantilla de email profesional
+                var emailBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #f8f9fa; padding: 20px; text-align: center;'>
+                        <img src='[api\Assets\images\imagenOne.jpg]' alt='Logo' style='max-width: 150px;'>
+                        <h2 style='color: #343a40; margin-top: 15px;'>Recuperación de Contraseña</h2>
+                    </div>
+                    <div style='padding: 25px;'>
+                        <p>Hola {user.UserName},</p>
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
+                        <div style='text-align: center; margin: 25px 0;'>
+                            <a href='{resetLink}' style='background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>
+                                Restablecer Contraseña
+                            </a>
+                        </div>
+                        <p>Si no solicitaste este cambio, por favor ignora este mensaje. El enlace expirará en 1 hora.</p>
+                        <p style='color: #6c757d; font-size: 12px; margin-top: 30px;'>
+                            ¿No funciona el botón? Copia y pega este enlace en tu navegador:<br>
+                            <span style='word-break: break-all;'>{resetLink}</span>
+                        </p>
+                    </div>
+                    <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d;'>
+                        © {DateTime.Now.Year} {Request.Host}. Todos los derechos reservados.
+                    </div>
+                </div>";
+
+                await _emailSender.SendEmailAsync(user.Email, "Restablecer tu contraseña", emailBody);
+
+                _logger.LogInformation($"Email de recuperación enviado a {user.Email}");
+
                 return Ok(new
                 {
                     isSuccess = true,
-                    message = "Contraseña restablecida si el email es válido"
+                    message = "Si el email existe, se ha enviado un código de recuperación"
                 });
             }
-            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
-            var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.Password);
-            if (!result.Succeeded)
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al procesar solicitud de recuperación de contraseña");
+                return StatusCode(500, new
+                {
+                    isSuccess = false,
+                    message = "Error interno al procesar la solicitud"
+                });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
+        {
+            if (!ModelState.IsValid)
             {
                 return BadRequest(new
                 {
                     isSuccess = false,
-                    message = "No se pudo restablecer la contraseña",
-                    errors = result.Errors.Select(e => e.Description)
+                    message = "Datos inválidos",
+                    errors = ModelState.Values.SelectMany(v => v.Errors)
                 });
             }
 
-            return Ok(new
+            try
             {
-                isSuccess = true,
-                message = "Contraseña restablecida exitosamente"
-            });
+                var user = await _userManager.FindByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    // Por seguridad, no revelar si el email existe
+                    return Ok(new
+                    {
+                        isSuccess = true,
+                        message = "Contraseña restablecida exitosamente"
+                    });
+                }
+
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+                var result = await _userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
+
+                if (!result.Succeeded)
+                {
+                    _logger.LogWarning($"Error al restablecer contraseña para {request.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    return BadRequest(new
+                    {
+                        isSuccess = false,
+                        message = "No se pudo restablecer la contraseña",
+                        errors = result.Errors.Select(e => e.Description)
+                    });
+                }
+
+                _logger.LogInformation($"Contraseña restablecida exitosamente para {request.Email}");
+                return Ok(new
+                {
+                    isSuccess = true,
+                    message = "Contraseña restablecida exitosamente"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al restablecer contraseña");
+                return StatusCode(500, new
+                {
+                    isSuccess = false,
+                    message = "Error interno al restablecer la contraseña"
+                });
+            }
         }
+
         [HttpGet("test-email")]
         public async Task<IActionResult> TestEmail()
         {
-            await _emailSender.SendEmailAsync("kvenegasbermudez@gmail.com", "Prueba de envío", "<p>Hola, esto es una prueba.</p>");
-            return Ok("Correo enviado (si no hay error)");
+            string toEmail = "kvenegasbermudez@gmail.com";
+            string subject = "Prueba de correo";
+            string htmlMessage = "<h1>Correo de prueba desde Yetify</h1><p>Este es un mensaje de prueba.</p>";
+
+            await _emailSender.SendEmailAsync(toEmail, subject, htmlMessage);
+            return Ok("Correo de prueba enviado");
         }
+
     }
 }
