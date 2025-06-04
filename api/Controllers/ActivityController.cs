@@ -152,7 +152,7 @@ namespace api.Controllers
                     else
                         await route.ContinueAsync();
                 });
-                await page.GotoAsync(baseCategorieUrl, new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+                await page.GotoAsync(baseCategorieUrl, new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 40000 });
                 await page.WaitForSelectorAsync("div.col-xl-3", new PageWaitForSelectorOptions { State = WaitForSelectorState.Attached });
 
                 for (int i = 0; i < 5; i++)
@@ -203,7 +203,7 @@ namespace api.Controllers
         }
 
 
-        [HttpGet("BookActivity")]
+        [HttpGet("BooksByCategory")]
         public async Task<IActionResult> GetBooks([FromQuery] string category)
         {
             try
@@ -226,7 +226,7 @@ namespace api.Controllers
                 });
 
 
-                await page.GotoAsync(urlBooksByCategory, new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+                await page.GotoAsync(urlBooksByCategory, new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 40000 });
                 await page.WaitForSelectorAsync("div.col-xl-3", new PageWaitForSelectorOptions { State = WaitForSelectorState.Attached });
 
                 for (int i = 0; i < 5; i++)
