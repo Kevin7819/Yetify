@@ -52,9 +52,20 @@ Inside `api`, create a file named `appsettings.json` and add your credentials:
   "Jwt": {
     "Key": "13E13E1B-4222-43E5-8AA5-B8E5328D9E84",
     "Issuer": "YetifyAPI",
-    "Audience": "YetifyUsers"
+    "Audience": "YetifyUsers",
+    "ExpireMinutes": 60 
   },
-  "AllowedHosts": "*"
+  "AllowedHosts": "*",
+  "EmailConfiguration": {
+    "From": "kvenegasbermudez@gmail.com",
+    "DisplayName": "Yetify Support",
+    "SmtpServer": "smtp.gmail.com",
+    "Port": 587,
+    "Username": "kvenegasbermudez@gmail.com",
+    "Password": "gsas gryy bqng evwi",
+    "UseSsl": true,  
+    "Timeout": 30000  
+  }
 }
 ```
 
