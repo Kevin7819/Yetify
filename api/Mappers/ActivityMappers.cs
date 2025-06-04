@@ -17,7 +17,8 @@ namespace api.Mappers{
                 startDate = activity.startDate,
                 endDate = activity.endDate,
                 activityStatus = activity.activityStatus,
-                apiSource = activity.apiSource
+                urlSources = activity.urlSources,
+                userId = activity.userId                
             };
         }
 
@@ -30,7 +31,8 @@ namespace api.Mappers{
                 startDate = activityRequestDto.startDate,
                 endDate = activityRequestDto.endDate,
                 activityStatus = activityRequestDto.activityStatus,
-                apiSource = activityRequestDto.apiSource
+                urlSources = activityRequestDto.urlSources,
+                userId = activityRequestDto.userId
             };
         }
         

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 namespace api.Models
 {
     public class Activity
@@ -10,6 +11,10 @@ namespace api.Models
         public DateTime startDate { get; set; } //start date of the activity
         public DateTime endDate { get; set; } //End date of the activity
         public string activityStatus { get; set; } //Status of activity
-        public string apiSource { get; set; } //Activity resource API
+        public string urlSources { get; set; } //Activity resource API
+        public required int userId { get; set; } // Foreign key
+
+        [ForeignKey("userId")]
+        public User User { get; set; }// Navigation property
     }
 }
