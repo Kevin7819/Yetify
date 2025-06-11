@@ -12,6 +12,10 @@ namespace api.Models
         public string Role { get; set; }              // Optional: role info (can also use IdentityRole)
         public DateTime Birthday { get; set; }        // Custom field
         public DateTime RegistrationDate { get; set; } // Custom field
+        
+        public string? PasswordResetCode { get; set; }
+        public DateTime? PasswordResetCodeExpires { get; set; }
+
 
         // Navigation property for tasks
         public List<UserTask> UserTasks { get; set; } = new();
