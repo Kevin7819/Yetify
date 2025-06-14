@@ -46,8 +46,8 @@ namespace api.Custome
             // User claims to include in token
             var userClaims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, model.id.ToString()),  // Unique user ID
-                new Claim(ClaimTypes.Name, model.userName)                // Username
+                new Claim(ClaimTypes.NameIdentifier, model.Id.ToString()),  // Unique user ID
+                new Claim(ClaimTypes.Name, model.UserName)                // Username
             };
 
             // Get secret key from configuration

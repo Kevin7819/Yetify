@@ -1,17 +1,17 @@
-# Archivos binarios y de compilación
+# Binary and compiled files
 bin/
 obj/
 target/
 build/
 dist/
 
-# Dependencias
+# Dependencies
 node_modules/
 api/node_modules/
 .pnp.*
 .pnpm/
 
-# Archivos de configuración del sistema e IDEs
+# System and IDE configuration files
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -25,16 +25,21 @@ desktop.ini
 *.vs/
 *.sln.dotSettings
 
-# Logs y archivos temporales
+# Logs and temporary files
 logs/
 *.log
 npm-debug.log*
 
-# Configuración de la base de datos (NO versionar credenciales)
+# Database configuration (DON'T version credentials)
 api/appsettings.json
+api/appsettings.Development.json
 
-# Archivos de migración generados automáticamente por Entity Framework
+# Auto-generated Entity Framework migration files
 api/Migrations/
 
-# Publicaciones
+# Publish output
 wwwroot/
+
+# Project properties and build configurations
+**/Properties/
+**/Properties/*

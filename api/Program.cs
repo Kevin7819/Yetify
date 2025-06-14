@@ -1,6 +1,8 @@
 using api.Data;
 using api.Config;
-using Microsoft.AspNetCore.Authentication.JwtBearer; 
+using api.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -11,59 +13,89 @@ using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database context configuration with SQL Server
+// -------------------------------------------
+// 🔌 Database configuration (SQL Server)
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.CommandTimeout(300)));
 
-// JWT configuration
+// -------------------------------------------
+// 🔐 Identity configuration with custom User class
+builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.User.RequireUniqueEmail = true;
+
+    // Additional settings to avoid common issues
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores<ApplicationDBContext>()
+.AddDefaultTokenProviders();
+
+// 🔄 Configure token lifespan (e.g., 2 hours)
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(2));
+
+// -------------------------------------------
+// ⚙️ JWT configuration
 var jwtSettings = new JwtSettings();
+builder.Configuration.GetSection("Jwt").Bind(jwtSettings);
+builder.Services.AddSingleton(jwtSettings);
 
-builder.Configuration.GetSection("Jwt").Bind(jwtSettings); // Binds the configuration from appsettings.json to the instance
-builder.Services.AddSingleton(jwtSettings); // Registers the configuration
-
-// Authentication configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // JWT token validation parameters
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,                  // Validates the token issuer
-            ValidateAudience = true,                // Validates the token audience
-            ValidateLifetime = true,                // Checks if the token has expired
-            ValidateIssuerSigningKey = true,        // Validates the token signature
-            ValidIssuer = jwtSettings.Issuer,       // Valid issuer
-            ValidAudience = jwtSettings.Audience,   // Valid audience
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)) // Signing key
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
         };
     });
 
-// Authorization system configuration
-builder.Services.AddAuthorization();
+// -------------------------------------------
+// 📨 Email sending configuration
+var emailConfig = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
+//builder.Services.AddSingleton(emailConfig);
+builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
-builder.Services.AddScoped<AuthService>(); // Authentication service
-builder.Services.AddScoped<Utils>();       // Utility service 
+// -------------------------------------------
+// 💼 Custom services
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<Utils>();
 
-builder.Services.AddControllers();          // Enables controllers
-builder.Services.AddEndpointsApiExplorer(); // Enables endpoints
+// -------------------------------------------
+// 🧭 Controllers and endpoints
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 
-// Configuración detallada de Swagger con JWT
+// -------------------------------------------
+// 📘 Swagger configuration with JWT support
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Yetify", Version = "v1" });
 
-    // **Configuración para Bearer Token (JWT)**
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Ingresa tu token JWT en el formato: **Bearer {token}**",
-        Name = "Authorization",  // Nombre del header (debe ser "Authorization")
+        Description = "Enter your JWT token like: **Bearer {token}**",
+        Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",  // Esquema de autenticación (Bearer Token)
+        Scheme = "Bearer",
         BearerFormat = "JWT"
     });
 
-    // **Hace que Swagger UI pida el token en cada request**
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -75,28 +107,42 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new List<string>()  // Lista vacía indica que no se requieren scopes
+            new List<string>()
         }
     });
 });
 
-// Builds the application with all configurations
+// -------------------------------------------
+// 🚀 App build and configuration
 var app = builder.Build();
 
-// Enables Swagger (a tool that automatically documents the API) only in development environment
-if (app.Environment.IsDevelopment())
+// Database connection check
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();      // Generates a JSON file with the description of all endpoints
-    app.UseSwaggerUI();    // Creates an interactive web page to test the API
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+    try 
+    {
+        db.Database.CanConnect();
+        Console.WriteLine("✅ Successfully connected to the database");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Database connection error: {ex.Message}");
+    }
 }
 
-app.UseHttpsRedirection(); // Automatically redirects HTTP to HTTPS
+// Enable Swagger only in development environment
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.UseAuthentication();
+app.UseHttpsRedirection();
+
+app.UseAuthentication(); // 🔒 Required for token validation
 app.UseAuthorization();
 
-// Maps the controllers
 app.MapControllers();
 
-// Starts the application
 app.Run();

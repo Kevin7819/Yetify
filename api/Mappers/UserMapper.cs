@@ -12,12 +12,12 @@ namespace api.Mappers
         {
             return new UserDto
             {
-                id = userModel.id,
-                userName = userModel.userName,
-                role = userModel.role,
-                email = userModel.email,
-                birthday = userModel.birthday,
-                registrationDate = userModel.registrationDate
+                id = userModel.Id,
+                userName = userModel.UserName!,
+                role = userModel.Role,
+                email = userModel.Email!,
+                birthday = userModel.Birthday,
+                registrationDate = userModel.RegistrationDate
             };
         }
 
@@ -27,12 +27,11 @@ namespace api.Mappers
         {
             return new User
             {
-                userName = userDto.userName,
-                password = userDto.password, 
-                role = userDto.role,
-                email = userDto.email,
-                birthday = userDto.birthday,
-                registrationDate = DateTime.Now
+                UserName = userDto.userName,
+                Role = userDto.role,
+                Email = userDto.email,
+                Birthday = userDto.birthday,
+                RegistrationDate = DateTime.Now
             };
         }
     }
