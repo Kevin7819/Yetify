@@ -38,9 +38,6 @@ namespace api.Controllers
             _userManager = userManager;
             _emailSender = emailSender;
             _logger = logger;
-            _userManager = userManager;
-            _emailSender = emailSender;
-            _logger = logger;
         }
 
         /// <summary>
@@ -179,162 +176,13 @@ namespace api.Controllers
             });
         }
 
-        /// <summary>
-        /// Endpoint to initiate password reset process
-        /// </summary>
-        /// <param name="request">User's email address</param>
-        /// <returns>Success message (always returns success for security)</returns>
-        [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new
-                {
-                    isSuccess = false,
-                    message = "Datos inválidos",
-                    errors = ModelState.Values.SelectMany(v => v.Errors)
-                });
-            }
-
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(request.Email);
-                if (user == null)
-                {
-                    // Security: Always return success to prevent email enumeration
-                    _logger.LogInformation($"Solicitud de recuperación para email no registrado: {request.Email}");
-                    return Ok(new
-                    {
-                        isSuccess = true,
-                        message = "Si el email existe, se ha enviado un código de recuperación"
-                    });
-                }
-
-                // Generate and encode password reset token
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-                // Create reset link
-                var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={encodedToken}&email={WebUtility.UrlEncode(user.Email)}";
-
-                // Create professional HTML email template
-                var emailBody = $@"
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
-                    <div style='background-color: #f8f9fa; padding: 20px; text-align: center;'>
-                        <img src='[api\Assets\images\imagenOne.jpg]' alt='Logo' style='max-width: 150px;'>
-                        <h2 style='color: #343a40; margin-top: 15px;'>Recuperación de Contraseña</h2>
-                    </div>
-                    <div style='padding: 25px;'>
-                        <p>Hola {user.UserName},</p>
-                        <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
-                        <div style='text-align: center; margin: 25px 0;'>
-                            <a href='{resetLink}' style='background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>
-                                Restablecer Contraseña
-                            </a>
-                        </div>
-                        <p>Si no solicitaste este cambio, por favor ignora este mensaje. El enlace expirará en 1 hora.</p>
-                        <p style='color: #6c757d; font-size: 12px; margin-top: 30px;'>
-                            ¿No funciona el botón? Copia y pega este enlace en tu navegador:<br>
-                            <span style='word-break: break-all;'>{resetLink}</span>
-                        </p>
-                    </div>
-                    <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d;'>
-                        © {DateTime.Now.Year} {Request.Host}. Todos los derechos reservados.
-                    </div>
-                </div>";
-
-                await _emailSender.SendEmailAsync(user.Email, "Restablecer tu contraseña", emailBody);
-
-                _logger.LogInformation($"Email de recuperación enviado a {user.Email}");
-
-                return Ok(new
-                {
-                    isSuccess = true,
-                    message = "Si el email existe, se ha enviado un código de recuperación"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al procesar solicitud de recuperación de contraseña");
-                return StatusCode(500, new
-                {
-                    isSuccess = false,
-                    message = "Error interno al procesar la solicitud"
-                });
-            }
-        }
-
-        /// <summary>
-        /// Endpoint to complete password reset process
-        /// </summary>
-        /// <param name="request">Reset token, email and new password</param>
-        /// <returns>Success or error message</returns>
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new
-                {
-                    isSuccess = false,
-                    message = "Datos inválidos",
-                    errors = ModelState.Values.SelectMany(v => v.Errors)
-                });
-            }
-
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(request.Email);
-                if (user == null)
-                {
-                    // Security: Always return success to prevent email enumeration
-                    return Ok(new
-                    {
-                        isSuccess = true,
-                        message = "Contraseña restablecida exitosamente"
-                    });
-                }
-
-                // Decode token and reset password
-                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
-                var result = await _userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
-
-                if (!result.Succeeded)
-                {
-                    _logger.LogWarning($"Error al restablecer contraseña para {request.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                    return BadRequest(new
-                    {
-                        isSuccess = false,
-                        message = "No se pudo restablecer la contraseña",
-                        errors = result.Errors.Select(e => e.Description)
-                    });
-                }
-
-                _logger.LogInformation($"Contraseña restablecida exitosamente para {request.Email}");
-                return Ok(new
-                {
-                    isSuccess = true,
-                    message = "Contraseña restablecida exitosamente"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al restablecer contraseña");
-                return StatusCode(500, new
-                {
-                    isSuccess = false,
-                    message = "Error interno al restablecer la contraseña"
-                });
-            }
-        }
-
+        
         /// <summary>
         /// Endpoint to send 6-digit password reset code via email
         /// </summary>
         /// <param name="request">User's email address</param>
         /// <returns>Success message (always returns success for security)</returns>
-        [HttpPost("send-reset-code")]
+        [HttpPost("forgot-password")]
         public async Task<IActionResult> SendResetCode([FromBody] ForgotPasswordDto request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -363,25 +211,45 @@ namespace api.Controllers
             _dbContext.PasswordResetCodes.Add(resetCode);
             await _dbContext.SaveChangesAsync();
 
-            // Create email with code
-            string emailBody = $@"
-                <h2>Recuperación de Contraseña</h2>
-                <p>Tu código de verificación es:</p>
-                <h1 style='color: #007bff'>{code}</h1>
-                <p>Este código expira en 10 minutos.</p>
-            ";
+            // URL base for images
+            string baseUrl = "https://res.cloudinary.com/dyes5adqo/image/upload/v1749961816";
 
-            await _emailSender.SendEmailAsync(user.Email, "Código de Recuperación", emailBody);
+            // Create email with design for Yetify
+            string emailBody = $@"
+            <div style='font-family: Comic Sans MS, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 3px dashed #aee1f9; border-radius: 15px; overflow: hidden; background-color: #f0faff;'>
+                <div style='background-color: #d0f0ff; padding: 20px; text-align: center;'>
+                    <img src='{baseUrl}/imagenOne-Photoroom_bxq5yj.png' alt='Celular con candado' style='max-width: 120px; border-radius: 10px; margin-bottom: 10px;'>
+                    <h2 style='color: #007bff; margin-top: 0;'>¡Hola {user.UserName}!</h2>
+                </div>
+                <div style='padding: 25px; text-align: center;'>
+                    <p style='font-size: 18px;'>Tu amiguito Yetify te ayuda a recuperar tu contraseña 🐾</p>
+                    <p style='font-size: 16px;'>Aquí tienes tu código mágico de recuperación:</p>
+                    <div style='display: inline-block; background-color: #ffb347; color: #ffffff; font-size: 36px; padding: 20px 50px; border-radius: 12px; letter-spacing: 5px; font-weight: bold; margin: 20px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.2);'>
+                        {code}
+                    </div>
+                    <p style='font-size: 16px;'>Este código es válido por <b>10 minutos</b>. ¡No tardes en usarlo!</p>
+                    <p style='font-size: 14px; color: #555;'>Si no solicitaste este código, puedes ignorar este mensaje.</p>
+                </div>
+                <div style='background-color: #d0f0ff; padding: 15px; text-align: center;'>
+                    <img src='{baseUrl}/yetifylogo_qqasnx.png' alt='Yetify Logo' style='max-width: 100px; opacity: 0.85; margin-bottom: 8px;'>
+                    <div style='font-size: 12px; color: #6c757d;'>
+                        © {DateTime.Now.Year} Yetify. Todos los derechos reservados.
+                    </div>
+                </div>
+            </div>";
+
+            await _emailSender.SendEmailAsync(user.Email, "Tu Código de Recuperación - Yetify", emailBody);
 
             return Ok(new { isSuccess = true, message = "Código de recuperación enviado" });
         }
+
 
         /// <summary>
         /// Endpoint to reset password using 6-digit verification code
         /// </summary>
         /// <param name="request">Email, verification code and new password</param>
         /// <returns>Success or error message</returns>
-        [HttpPost("reset-password-with-code")]
+        [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeDto request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
