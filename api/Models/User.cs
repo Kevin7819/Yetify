@@ -21,7 +21,5 @@ namespace api.Models
 
         // Navigation property for tasks
         public List<UserTask> UserTasks { get; set; } = new();
-        // Navigation property for tasks
-        public List<UserTask> UserTasks { get; set; } = new();
     }
 }

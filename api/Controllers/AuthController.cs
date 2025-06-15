@@ -1,18 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
 using System.Text;
-
-using Microsoft.AspNetCore.Hosting;
-using System.Text;
-
 using api.Data;
 using api.Models;
 using api.Dtos.Login;
@@ -20,10 +11,6 @@ using api.Dtos.User;
 using api.Custome;
 using api.Constants;
 using api.Services;
-using Microsoft.AspNetCore.Identity.Data;
-using System.Net;
-using api.Services;
-using Microsoft.AspNetCore.Identity.Data;
 using System.Net;
 
 namespace api.Controllers
@@ -38,16 +25,7 @@ namespace api.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<AuthController> _logger;
-        private readonly UserManager<User> _userManager;
-        private readonly IEmailSender _emailSender;
-        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(
-            ApplicationDBContext dbContext,
-            Utils utils,
-            UserManager<User> userManager,
-            IEmailSender emailSender,
-            ILogger<AuthController> logger)
         public AuthController(
             ApplicationDBContext dbContext,
             Utils utils,
@@ -76,11 +54,6 @@ namespace api.Controllers
             // Validate model state
             if (!ModelState.IsValid)
             {
-                return BadRequest(new
-                {
-                    isSuccess = false,
-                    message = "Error de validación",
-                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
                 return BadRequest(new
                 {
                     isSuccess = false,
@@ -156,7 +129,7 @@ namespace api.Controllers
                     detail = ex.Message
                 });
             }
-            }
+            
         }
 
         /// <summary>
@@ -191,10 +164,6 @@ namespace api.Controllers
             // Create login response with JWT token
             var loginResponse = new LoginResponseDto
             {
-                id = user.Id,
-                userName = user.UserName!,
-                email = user.Email!,
-                role = user.Role,
                 id = user.Id,
                 userName = user.UserName!,
                 email = user.Email!,
