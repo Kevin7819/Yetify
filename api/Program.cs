@@ -9,7 +9,9 @@ using System.Text;
 using api.Services;
 using api.Custome;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
+using System.IO;  
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +68,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // -------------------------------------------
 // 📨 Email sending configuration
 var emailConfig = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
-//builder.Services.AddSingleton(emailConfig);
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
@@ -112,6 +113,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
 // -------------------------------------------
 // 🚀 App build and configuration
 var app = builder.Build();
@@ -142,6 +144,15 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication(); // 🔒 Required for token validation
 app.UseAuthorization();
+
+// ------------------------------
+// Habilitar archivos estáticos para la carpeta api/Assets/images
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Assets", "images")),
+    RequestPath = "/Assets/images"
+});
 
 app.MapControllers();
 
