@@ -9,5 +9,8 @@ namespace api.Constants
             public const string TypeRequired = "Se requiere indicar el tipo de actividad";
             public const string IdentifyRequired = "Se requiere de un identificador para la actividad";
             public const string StatusRequired = "Se requiere de indicar el estado de la actividad";
+            public const string urlSources = "https://arbolabc.com/cuentos-clasicos-infantiles";
+            public const string baseUrlSources ="https://arbolabc.com";
+            
         }
 }

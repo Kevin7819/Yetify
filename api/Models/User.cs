@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
+// Main user entity model
 // Main user entity model
 namespace api.Models
 {
@@ -17,6 +19,8 @@ namespace api.Models
         public DateTime? PasswordResetCodeExpires { get; set; }
 
 
+        // Navigation property for tasks
+        public List<UserTask> UserTasks { get; set; } = new();
         // Navigation property for tasks
         public List<UserTask> UserTasks { get; set; } = new();
     }
