@@ -68,5 +68,37 @@ namespace api.Controllers
                 });
             }
         }
+        [HttpGet("search/{search}")]
+        public IActionResult GetSearchBooks([FromRoute] string search)
+        {
+            try
+            {
+                if (!System.IO.File.Exists(BooksFilePath))
+                    return NotFound(new { error = "No se encontraron libros." });
+
+                var jsonData = System.IO.File.ReadAllText(BooksFilePath);
+                var books = JsonSerializer.Deserialize<List<Book>>(jsonData) ?? new List<Book>();
+
+                var searchLower = search.ToLower();
+
+                var filteredBooks = books
+                    .Where(b =>
+                        (!string.IsNullOrEmpty(b.Title) && b.Title.ToLower().Contains(searchLower)) ||
+                        (!string.IsNullOrEmpty(b.Author) && b.Author.ToLower().Contains(searchLower))
+                    )
+                    .Select(b => b.toDto())
+                    .ToList();
+
+                return Ok(filteredBooks);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "Ocurrió un error al obtener los libros.",
+                    detail = ex.Message
+                });
+            }
+        }
     }
 }
