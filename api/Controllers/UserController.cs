@@ -218,7 +218,6 @@ namespace api.Controllers
 
             // Update user properties
             userModel.UserName = userDto.userName;
-            userModel.Role = userDto.role;
             userModel.Email = userDto.email;
             userModel.Birthday = userDto.birthday;
 

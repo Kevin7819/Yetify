@@ -43,7 +43,7 @@ namespace api.Controllers
         /// <summary>
         /// Endpoint for user registration
         /// </summary>
-        /// <param name="userDto">User data including username, email, password, role and birthday</param>
+        /// <param name="userDto">User data including username, email, password and birthday</param>
         /// <returns>Success response with user ID or error messages</returns>
         [HttpPost("Register")]
         public async Task<ActionResult> Register(UserDto userDto)
@@ -88,7 +88,6 @@ namespace api.Controllers
                 {
                     UserName = userDto.userName,
                     Email = userDto.email,
-                    Role = userDto.role,
                     Birthday = userDto.birthday,
                     RegistrationDate = DateTime.Now
                 };
@@ -164,7 +163,6 @@ namespace api.Controllers
                 id = user.Id,
                 userName = user.UserName!,
                 email = user.Email!,
-                role = user.Role,
                 token = _utils.GenerateJWT(user)
             };
 
