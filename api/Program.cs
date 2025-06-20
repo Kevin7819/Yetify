@@ -10,8 +10,6 @@ using api.Services;
 using api.Custome;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
-using System.Collections.Generic;
-using System.IO;  
 
 var builder = WebApplication.CreateBuilder(args);
 
