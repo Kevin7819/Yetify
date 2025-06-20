@@ -8,10 +8,7 @@ namespace api.Dtos.User
         
         // Required password (should be hashed before storage)
         public string password { get; set; }
-        
-        // User role (e.g., "Admin", "User")
-        public string role { get; set; }
-        
+    
         // Required unique email
         public string email { get; set; }
         

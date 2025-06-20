@@ -9,9 +9,6 @@ namespace api.Dtos.User
         // New password (should be hashed before storage)
         public string password { get; set; }
 
-        // Updated user role/permissions
-        public string role { get; set; }
-
         // Updated email (must remain unique)
         public string email { get; set; }
 

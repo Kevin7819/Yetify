@@ -16,9 +16,6 @@ namespace api.Dtos.User
         [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
         public string password { get; set; }
         
-        [Required(ErrorMessage = "El rol es requerido")]
-        public string role { get; set; }
-        
         [Required(ErrorMessage = "El email es requerido")]
         [EmailAddress(ErrorMessage = "El formato del email no es válido")]
         public string email { get; set; }
