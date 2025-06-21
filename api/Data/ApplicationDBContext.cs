@@ -14,6 +14,18 @@ namespace api.Data
         public DbSet<Activity> Activities { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+        public DbSet<UserBookProgress> UserBookProgresses { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<UserBookProgress>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.BookId }).IsUnique();
+                entity.Property(e => e.Progress).HasPrecision(3, 2);
+            });
+        }
 
     }
 }
