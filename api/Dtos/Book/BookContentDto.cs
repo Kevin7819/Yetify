@@ -7,5 +7,6 @@ namespace api.Dtos.Book
         public string Author { get; set; }
 
         public string Content { get; set; }
+        public double Progress { get; set; } = 0.0;
     }
 }

@@ -73,6 +73,7 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 // 💼 Custom services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<Utils>();
+builder.Services.AddScoped<IUserBookProgressService, UserBookProgressService>();
 
 // -------------------------------------------
 // 🧭 Controllers and endpoints
