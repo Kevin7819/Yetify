@@ -85,6 +85,15 @@ namespace api.Controllers
             taskDto.status = UserTaskConstants.DefaultStatus;
             }
 
+            var existingTask = await _context.UserTasks
+                .AnyAsync(t => t.idUser == idUser
+                    && t.description.Trim().ToLower() == taskDto.description.Trim().ToLower());
+
+            if (existingTask)
+            {
+            return BadRequest(new { message = "La descripción de la tarea no puede ser la misma" });
+            }
+
             // Create the task assigned to the specified user
             var taskModel = taskDto.ToTaskFromCreateDto();
             taskModel.idUser = idUser;  // Assign to the user from the route parameter
@@ -135,6 +144,15 @@ namespace api.Controllers
             if (string.IsNullOrWhiteSpace(taskDto.status))
             {
                 taskDto.status = UserTaskConstants.DefaultStatus;
+            }
+
+             var existingTask = await _context.UserTasks
+                .AnyAsync(t => t.idUser == userId
+                    && t.description.Trim().ToLower() == taskDto.description.Trim().ToLower());
+
+            if (existingTask)
+            {
+                return BadRequest(new { message = "La descripción de la tarea no puede ser la misma" });
             }
 
             // Convert DTO to model and save to database
@@ -206,6 +224,17 @@ namespace api.Controllers
             {
                 return BadRequest(new { message = MessageConstants.FieldRequired("El curso") });
             }
+
+            var duplicateTask = await _context.UserTasks
+                .AnyAsync(t => t.idUser == taskDto.idUser 
+                        && t.description.Trim().ToLower() == taskDto.description.Trim().ToLower()
+                        && t.id != id);
+
+            if (duplicateTask)
+            {
+                return BadRequest(new { message = "La descripción de la tarea no puede ser la misma" });
+            }
+
     
             // Update task data
             taskModel.idUser = taskDto.idUser;

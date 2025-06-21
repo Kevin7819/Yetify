@@ -11,6 +11,10 @@ api/node_modules/
 .pnp.*
 .pnpm/
 
+# Environment variables and sensitive data
+api/firebase-adminsdk.json
+
+
 # System and IDE configuration files
 .DS_Store
 Thumbs.db
