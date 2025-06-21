@@ -47,3 +47,5 @@ wwwroot/
 # Project properties and build configurations
 **/Properties/
 **/Properties/*
+
+api/api.csproj
